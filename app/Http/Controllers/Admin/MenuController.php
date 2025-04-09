@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Models\Menu; // Import the Menu model
 use Illuminate\Http\Request;
-// Removed redundant use statement: use App\Http\Controllers\Controller;
+use App\Http\Controllers\Controller; // Add base controller import
 
 class MenuController extends Controller
 {

@@ -112,11 +112,11 @@ class MenuItemController extends Controller
     public function updateOrder(Request $request, Menu $menu)
     {
         $validated = $request->validate([
-            'order' => 'required|array',
-            'order.*' => 'integer|exists:menu_items,id', // Ensure all IDs exist
+            'orderedIds' => 'required|array', // Change 'order' to 'orderedIds'
+            'orderedIds.*' => 'integer|exists:menu_items,id', // Ensure all IDs exist
         ]);
 
-        foreach ($validated['order'] as $index => $itemId) {
+        foreach ($validated['orderedIds'] as $index => $itemId) { // Change 'order' to 'orderedIds'
             // Ensure the item belongs to the current menu before updating
             $item = $menu->allItems()->find($itemId);
             if ($item) {

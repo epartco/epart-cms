@@ -34,12 +34,19 @@
                 {{-- Menu Items Management Section --}}
                 {{-- Initialize Alpine.js component --}}
                 <div x-data="menuItemsManager({{ $menu->id }}, {{ json_encode($menu->items->toArray()) }})" class="mb-6 p-4 bg-gray-100 rounded border border-gray-300">
-                    <h3 class="text-lg font-semibold text-gray-700 mb-4">메뉴 항목 관리</h3>
+                    <h3 class="text-lg font-semibold text-gray-700 mb-4">메뉴 항목 관리 (드래그하여 순서 변경)</h3>
 
                     {{-- Display Existing Menu Items using Alpine template --}}
-                    <div id="menu-items-list" class="space-y-3 mb-4">
+                    <div id="menu-items-list" class="space-y-3 mb-4" x-ref="itemsList"> {{-- Add x-ref --}}
                         <template x-for="item in items" :key="item.id">
-                            <div class="flex items-center justify-between p-3 bg-white border rounded shadow-sm" :data-item-id="item.id">
+                            {{-- Add menu-item class --}}
+                            <div class="flex items-center justify-between p-3 bg-white border rounded shadow-sm menu-item" :data-item-id="item.id">
+                                {{-- Drag Handle --}}
+                                <div class="cursor-move mr-2 text-gray-400 hover:text-gray-600 handle">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                                    </svg>
+                                </div>
                                 <div class="flex-grow mr-4">
                                     <span class="font-medium" x-text="item.title"></span>
                                     <span class="text-sm text-gray-500 ml-2" x-text="'(' + item.url + ')'"></span>
@@ -102,6 +109,8 @@
  @endsection
 
  <script>
+ import Sortable from 'sortablejs'; // Import SortableJS
+
  document.addEventListener('alpine:init', () => {
      Alpine.data('menuItemsManager', (menuId, initialItems = []) => ({
          menuId: menuId,
@@ -116,6 +125,7 @@
              // console.log('Menu items manager initialized for menu:', this.menuId, this.items);
              // Reset form to 'add' mode initially
              this.resetForm();
+             this.initSortable(); // Initialize SortableJS
          },
 
          // Reset form fields and set to 'add' mode
@@ -231,12 +241,65 @@
              }
          },
 
-         // --- Placeholder for updateOrder ---
-         // async updateOrder() {
-         //     // Get the new order of items (e.g., from SortableJS)
-         //     const orderedIds = this.items.map(item => item.id);
-         //     // Send AJAX request to update order on the backend
-         // }
+         // Initialize SortableJS on the items list
+         initSortable() {
+             const el = this.$refs.itemsList;
+             if (!el) {
+                 console.error('Sortable target element not found.');
+                 return;
+             }
+             new Sortable(el, {
+                 animation: 150,
+                 handle: '.handle', // Use the handle for dragging
+                 ghostClass: 'bg-blue-100', // Class for the drop placeholder
+                 onEnd: (evt) => {
+                     // Get the new order of item IDs
+                     const itemElements = Array.from(evt.target.children);
+                     const orderedIds = itemElements
+                         .filter(node => node.matches('.menu-item')) // Ensure we only get actual items
+                         .map(node => node.getAttribute('data-item-id'));
+                     this.updateOrder(orderedIds);
+                 },
+             });
+         },
+
+         // Update item order on the backend
+         async updateOrder(orderedIds) {
+             this.loading = true; // Indicate loading state
+             this.error = '';
+             console.log('Updating order:', orderedIds); // Debugging
+
+             try {
+                 const response = await fetch(`/admin/menus/${this.menuId}/items/update-order`, {
+                     method: 'POST', // Use POST or PUT as defined in your routes
+                     headers: {
+                         'Content-Type': 'application/json',
+                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                     },
+                     body: JSON.stringify({
+                         orderedIds: orderedIds
+                     })
+                 });
+
+                 if (!response.ok) {
+                     const errorData = await response.json();
+                     throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+                 }
+
+                 // Optionally, re-fetch or re-order items in the frontend if needed,
+                 // but SortableJS already visually reordered them.
+                 // Maybe show a success message.
+                 console.log('Order updated successfully');
+
+
+             } catch (err) {
+                 console.error('Error updating menu item order:', err);
+                 this.error = `순서 업데이트 중 오류 발생: ${err.message}`;
+                 // Optionally revert the visual order if the backend update fails
+             } finally {
+                 this.loading = false;
+             }
+         }
 
      }));
  });
