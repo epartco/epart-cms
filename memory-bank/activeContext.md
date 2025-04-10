@@ -2,10 +2,17 @@
 
 ## 현재 작업 초점
 
+*   **Post 슬러그 기능 구현 완료.**
 *   다음 주요 기능 구현 시작 (미디어 라이브러리 또는 사이트 설정)
 
 ## 최근 변경 사항
 
+*   **Post 슬러그 기능 개선:**
+    *   `app/Models/Post.php` 수정: `sluggable()` 메소드를 `Page` 모델과 동일하게 수정하여 한글 처리 및 `onUpdate` 옵션 적용. (`Sluggable` 트레이트 및 기본 설정은 이전 단계에서 완료됨)
+    *   `database/migrations/2025_04_08_135212_create_posts_table.php` 확인: `slug` 컬럼 존재 확인.
+    *   불필요한 `add_slug_to_posts_table` 마이그레이션 삭제.
+    *   `app/Http/Controllers/PostController.php`의 `show` 메소드 수정: 암시적 라우트 모델 바인딩 사용.
+    *   `routes/web.php` 및 `resources/views/posts/index.blade.php` 확인: 이미 슬러그 사용 중임을 확인.
 *   **관리자 메뉴 항목 순서 변경 기능 구현 완료:**
     *   `resources/views/admin/menus/edit.blade.php` 뷰 수정:
         *   SortableJS 라이브러리 임포트 및 적용 (`x-ref`, `handle` 클래스 추가)

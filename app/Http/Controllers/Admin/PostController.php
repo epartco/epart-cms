@@ -5,6 +5,11 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Post;
 use Illuminate\Http\Request;
+use App\Models\Category; // Import Category model
+use App\Models\Tag; // Import Tag model
+use Illuminate\Support\Str; // Import Str facade
+use Illuminate\Validation\Rule; // Import Rule
+use Illuminate\Support\Facades\Storage; // Import Storage facade
 // Removed redundant: use App\Http\Controllers\Controller;
 
 class PostController extends Controller
@@ -19,10 +24,6 @@ class PostController extends Controller
     }
 
     /**
-use App\Models\Category; // Import Category model
-use App\Models\Tag; // Import Tag model
-
-    /**
      * Show the form for creating a new resource.
      */
     public function create()
@@ -32,11 +33,6 @@ use App\Models\Tag; // Import Tag model
 
         return view('admin.posts.create', compact('categories', 'tags'));
     }
-
-    /**
-use Illuminate\Support\Str; // Import Str facade
-use Illuminate\Validation\Rule; // Import Rule
-use Illuminate\Support\Facades\Storage; // Import Storage facade
 
     /**
      * Store a newly created resource in storage.

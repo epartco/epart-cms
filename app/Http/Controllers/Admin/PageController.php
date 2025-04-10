@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Page;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str; // Import Str facade for slug generation
+use Illuminate\Validation\Rule; // Import Rule for status validation
 // Removed redundant: use App\Http\Controllers\Controller;
 
 class PageController extends Controller
@@ -27,10 +29,6 @@ class PageController extends Controller
     }
 
     /**
-use Illuminate\Support\Str; // Import Str facade for slug generation
-use Illuminate\Validation\Rule; // Import Rule for status validation
-
-    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
@@ -42,21 +40,14 @@ use Illuminate\Validation\Rule; // Import Rule for status validation
             'meta_title' => ['nullable', 'string', 'max:255'],
             'meta_description' => ['nullable', 'string'],
             'meta_keywords' => ['nullable', 'string', 'max:255'],
-            'canonical_url' => ['nullable', 'url', 'max:255'],
-        ]);
+             'canonical_url' => ['nullable', 'url', 'max:255'],
+         ]);
 
-        // Generate a unique slug from the title
-        $slug = Str::slug($validatedData['title']);
-        $count = Page::where('slug', 'LIKE', $slug . '%')->count();
-        if ($count > 0) {
-            $slug = $slug . '-' . ($count + 1);
-        }
+         // Add user_id to the validated data
+         // Slug will be generated automatically by the Sluggable trait in the Page model
+         $validatedData['user_id'] = auth()->id(); // Assign the currently logged-in user as author
 
-        // Add slug and user_id to the validated data
-        $validatedData['slug'] = $slug;
-        $validatedData['user_id'] = auth()->id(); // Assign the currently logged-in user as author
-
-        Page::create($validatedData);
+         Page::create($validatedData);
 
         return redirect()->route('admin.pages.index')
                          ->with('success', 'Page created successfully.');
@@ -90,26 +81,13 @@ use Illuminate\Validation\Rule; // Import Rule for status validation
             'meta_title' => ['nullable', 'string', 'max:255'],
             'meta_description' => ['nullable', 'string'],
             'meta_keywords' => ['nullable', 'string', 'max:255'],
-            'canonical_url' => ['nullable', 'url', 'max:255'],
-        ]);
+             'canonical_url' => ['nullable', 'url', 'max:255'],
+         ]);
 
-        // Check if the title has changed to regenerate the slug
-        if ($page->title !== $validatedData['title']) {
-            $slug = Str::slug($validatedData['title']);
-            $count = Page::where('slug', 'LIKE', $slug . '%')->where('id', '!=', $page->id)->count();
-            if ($count > 0) {
-                $slug = $slug . '-' . ($count + 1);
-            }
-            $validatedData['slug'] = $slug;
-        } else {
-            // Keep the existing slug if title hasn't changed
-            $validatedData['slug'] = $page->slug;
-        }
+         // Slug will be updated automatically by the Sluggable trait if the title changes.
+         // user_id should generally not be updated, keep the original author.
 
-        // user_id should generally not be updated, keep the original author
-        // $validatedData['user_id'] = auth()->id();
-
-        $page->update($validatedData);
+         $page->update($validatedData);
 
         return redirect()->route('admin.pages.index')
                          ->with('success', 'Page updated successfully.');
