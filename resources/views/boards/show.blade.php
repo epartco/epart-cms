@@ -28,8 +28,8 @@
                                 @foreach ($articles as $article)
                                     <tr>
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            {{-- Link to article show page (to be created) --}}
-                                            <a href="#" class="text-sm font-medium text-blue-600 hover:underline">
+                                            {{-- Link to article show page --}}
+                                            <a href="{{ route('articles.show', $article) }}" class="text-sm font-medium text-blue-600 hover:underline">
                                                 {{ $article->title }}
                                             </a>
                                             @if($article->comments_count > 0) {{-- Assuming comments_count exists --}}

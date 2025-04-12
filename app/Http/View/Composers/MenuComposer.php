@@ -3,7 +3,9 @@
 namespace App\Http\View\Composers;
 
 use App\Models\Menu;
+use App\Models\MenuItem; // MenuItem 모델 추가
 use Illuminate\View\View;
+use Illuminate\Support\Collection; // Collection 추가
 
 class MenuComposer
 {
@@ -15,10 +17,15 @@ class MenuComposer
      */
     public function compose(View $view)
     {
-        // 메뉴 데이터를 가져옵니다. 우선 간단하게 모든 메뉴를 가져옵니다.
-        // 추후 계층 구조나 활성화 상태 등을 고려하여 쿼리를 수정할 수 있습니다.
-        $menus = Menu::orderBy('order', 'asc')->get(); // 'order' 컬럼 기준으로 정렬 (마이그레이션에 order 컬럼 추가 필요)
+        // 모든 메뉴 항목을 가져옵니다 (최상위 항목만)
+        $menuItems = MenuItem::whereNull('parent_id')
+                             ->with('children') // 자식 항목들을 Eager Load
+                             ->orderBy('order', 'asc')
+                             ->get();
 
-        $view->with('menus', $menus);
+        // 디버깅 코드 제거
+
+        // '$mainMenuItems' 라는 이름으로 뷰에 전달합니다.
+        $view->with('mainMenuItems', $menuItems);
     }
 }

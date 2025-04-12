@@ -1,7 +1,5 @@
-@extends('layouts.app')
-
-@section('content')
-<div class="container mx-auto px-4 py-8">
+<x-app-layout>
+    <div class="container mx-auto px-4 py-8">
     {{-- Article Details --}}
     <article class="bg-white shadow-md rounded-lg p-6 mb-8">
         <h1 class="text-3xl font-bold mb-4">{{ $article->title }}</h1>
@@ -14,10 +12,15 @@
         <div class="prose max-w-none">
             {!! $article->content !!} {{-- Assuming content might contain HTML --}}
         </div>
+
+        {{-- Back to List Link --}}
+        <div class="mt-6">
+            <a href="{{ route('boards.show', $article->board->slug) }}" class="text-blue-600 hover:underline">&larr; 목록으로 돌아가기</a>
+        </div>
     </article>
 
     {{-- Comments Section --}}
-    <section class="bg-white shadow-md rounded-lg p-6">
+    <section class="bg-white shadow-md rounded-lg p-6 mt-8"> {{-- Added mt-8 for spacing --}}
         <h2 class="text-2xl font-semibold mb-6">댓글 ({{ $article->comments->count() }})</h2>
 
         {{-- Display Comments --}}
@@ -105,5 +108,5 @@
             </form>
         </div>
     </section>
-</div>
-@endsection
+    </div>
+</x-app-layout>

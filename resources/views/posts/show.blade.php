@@ -5,11 +5,11 @@
                 <div class="p-6 md:p-8 text-gray-900">
                     <h1 class="text-3xl md:text-4xl font-semibold mb-4">{{ $post->title }}</h1>
                     <p class="text-sm text-gray-500 mb-6">
-                        Published on {{ $post->created_at->format('M d, Y') }}
+                        Published on {{ $post->created_at?->format('M d, Y') }}
                         {{-- Add author later if needed: by {{ $post->author->name }} --}}
                         {{-- Add category/tags later if needed --}}
                     </p>
-                    <div class="prose max-w-none">
+                    <div class="prose max-w-none"> {{-- Restore 'prose' class --}}
                         {{-- Ensure content is displayed safely. Use {!! $post->content !!} if content contains HTML and is trusted. --}}
                         {!! $post->content !!}
                     </div>

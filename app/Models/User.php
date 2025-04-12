@@ -7,11 +7,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
-use Spatie\Permission\Traits\HasRoles; // Import the trait
+use Spatie\Permission\Traits\HasRoles; // Import the HasRoles trait
+use Spatie\MediaLibrary\HasMedia; // Import the HasMedia interface
+use Spatie\MediaLibrary\InteractsWithMedia; // Import the InteractsWithMedia trait
 
-class User extends Authenticatable
+class User extends Authenticatable implements HasMedia // Implement the interface
 {
-    use HasApiTokens, HasFactory, Notifiable, HasRoles; // Add the trait
+    use HasApiTokens, HasFactory, Notifiable, HasRoles, InteractsWithMedia; // Add the InteractsWithMedia trait
 
     /**
      * The attributes that are mass assignable.
@@ -43,4 +45,20 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    /**
+     * Register the media conversions.
+     *
+     * @param \Spatie\MediaLibrary\MediaCollections\Models\Media|null $media
+     * @throws \Spatie\Image\Exceptions\InvalidManipulation
+     */
+    public function registerMediaConversions(\Spatie\MediaLibrary\MediaCollections\Models\Media $media = null): void
+    {
+        $this->addMediaConversion('thumbnail')
+              ->width(150) // Define thumbnail width
+              ->height(150) // Define thumbnail height
+              ->format('png') // Explicitly set format to PNG
+              ->sharpen(10)
+              ->nonQueued(); // Perform conversion immediately (can be queued for performance)
+    }
 }

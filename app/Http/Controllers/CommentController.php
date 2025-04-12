@@ -16,12 +16,21 @@ class CommentController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        $validatedData = $request->validate([
+        $baseRules = [
             'article_id' => 'required|exists:articles,id',
             'content' => 'required|string|max:1000',
-            'guest_name' => 'required_without:user_id|nullable|string|max:255', // Required if not logged in
-            'guest_password' => 'required_without:user_id|nullable|string|min:4', // Required if not logged in
-        ]);
+        ];
+
+        $guestRules = [];
+        if (!Auth::check()) { // If user is a guest
+            $guestRules = [
+                'guest_name' => 'required|string|max:255',
+                'guest_password' => 'required|string|min:4',
+            ];
+        }
+
+        $rules = array_merge($baseRules, $guestRules);
+        $validatedData = $request->validate($rules);
 
         $article = Article::findOrFail($validatedData['article_id']);
 

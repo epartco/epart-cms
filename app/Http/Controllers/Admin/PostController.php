@@ -44,7 +44,7 @@ class PostController extends Controller
             'category_id' => ['nullable', 'exists:categories,id'],
             'content' => ['nullable', 'string'],
             'tags' => ['nullable', 'string'], // Tags as comma-separated string for now
-            'featured_image' => ['nullable', 'image', 'max:2048'], // Example validation: image, max 2MB
+            // featured_image validation removed as it's now automatic
             'status' => ['required', Rule::in(['published', 'draft'])],
             'meta_title' => ['nullable', 'string', 'max:255'],
             'meta_description' => ['nullable', 'string'],
@@ -52,11 +52,15 @@ class PostController extends Controller
             'canonical_url' => ['nullable', 'url', 'max:255'],
         ]);
 
-        // Handle featured image upload
-        $imagePath = null;
-        if ($request->hasFile('featured_image') && $request->file('featured_image')->isValid()) {
-            // Store in 'public/posts' directory. Make sure to run `php artisan storage:link`
-            $imagePath = $request->file('featured_image')->store('posts', 'public');
+        // Extract first image from content to use as featured image
+        $featuredImagePath = null;
+        if (!empty($validatedData['content'])) {
+            preg_match('/<img[^>]+src="([^">]+)"/', $validatedData['content'], $matches);
+            if (isset($matches[1])) {
+                // Optionally, validate if the URL is internal or external, etc.
+                // For simplicity, we just take the first src found.
+                $featuredImagePath = $matches[1];
+            }
         }
 
         // Generate a unique slug
@@ -70,7 +74,7 @@ class PostController extends Controller
         $postData = $validatedData;
         $postData['slug'] = $slug;
         $postData['user_id'] = auth()->id();
-        $postData['featured_image_path'] = $imagePath;
+        $postData['featured_image_path'] = $featuredImagePath; // Assign extracted image path
         // Set published_at if status is published
         $postData['published_at'] = ($validatedData['status'] === 'published') ? now() : null;
 
@@ -133,7 +137,7 @@ class PostController extends Controller
             'category_id' => ['nullable', 'exists:categories,id'],
             'content' => ['nullable', 'string'],
             'tags' => ['nullable', 'string'], // Tags as comma-separated string
-            'featured_image' => ['nullable', 'image', 'max:2048'], // Optional update
+            // featured_image validation removed as it's now automatic
             'status' => ['required', Rule::in(['published', 'draft'])],
             'meta_title' => ['nullable', 'string', 'max:255'],
             'meta_description' => ['nullable', 'string'],
@@ -144,18 +148,15 @@ class PostController extends Controller
         // Prepare data for update
         $postData = $validatedData;
 
-        // Handle featured image update
-        if ($request->hasFile('featured_image') && $request->file('featured_image')->isValid()) {
-            // Delete old image if it exists
-            if ($post->featured_image_path) {
-                Storage::disk('public')->delete($post->featured_image_path);
+        // Extract first image from content to use as featured image
+        $featuredImagePath = null;
+        if (!empty($validatedData['content'])) {
+            preg_match('/<img[^>]+src="([^">]+)"/', $validatedData['content'], $matches);
+            if (isset($matches[1])) {
+                $featuredImagePath = $matches[1];
             }
-            // Store new image
-            $postData['featured_image_path'] = $request->file('featured_image')->store('posts', 'public');
-        } else {
-            // Keep the existing image path if no new image is uploaded
-            $postData['featured_image_path'] = $post->featured_image_path;
         }
+        $postData['featured_image_path'] = $featuredImagePath; // Assign extracted image path
 
         // Update slug only if the title has changed
         if ($post->title !== $validatedData['title']) {
@@ -213,10 +214,7 @@ class PostController extends Controller
      */
     public function destroy(Post $post)
     {
-        // Delete the featured image from storage if it exists
-        if ($post->featured_image_path) {
-            Storage::disk('public')->delete($post->featured_image_path);
-        }
+        // No need to delete featured image file as it's just a path from content
 
         // Detach tags before deleting the post to clean up pivot table entries
         $post->tags()->detach();

@@ -3,9 +3,15 @@
 @section('content')
     <div class="container mx-auto px-4 sm:px-8">
         <div class="py-8">
-            <div>
-                <h2 class="text-2xl font-semibold leading-tight">Users</h2>
+            {{-- Title and Create Button Container --}}
+            <div class="flex justify-between items-center mb-4 px-4 py-3"> {{-- Removed bg-gray-100, border-b, rounded-t-lg --}}
+                <h2 class="text-2xl font-semibold leading-tight text-gray-700">Users</h2>
+                <a href="{{ route('admin.users.create') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    Create User
+                </a>
             </div>
+
+            {{-- Search/Filter Area (Optional - kept separate for clarity) --}}
             <div class="my-2 flex sm:flex-row flex-col">
                 {{-- Add search/filter elements here later --}}
                 <div class="block relative">
@@ -20,40 +26,38 @@
                     <input placeholder="Search"
                            class="appearance-none rounded-r rounded-l sm:rounded-l-none border border-gray-400 border-b block pl-8 pr-6 py-2 w-full bg-white text-sm placeholder-gray-400 text-gray-700 focus:bg-white focus:placeholder-gray-600 focus:text-gray-700 focus:outline-none" /> --}}
                 </div>
-                <div class="ml-auto">
-                     <a href="{{ route('admin.users.create') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                         Create User
-                     </a>
-                </div>
+                {{-- Button moved to the title container --}}
             </div>
+
+            {{-- Table Container --}}
             <div class="-mx-4 sm:-mx-8 px-4 sm:px-8 py-4 overflow-x-auto">
-                <div class="inline-block min-w-full shadow rounded-lg overflow-hidden">
+                {{-- Apply rounded-t-lg and rounded-b-lg --}}
+                <div class="w-full shadow rounded-t-lg rounded-b-lg overflow-hidden"> {{-- Replaced inline-block min-w-full with w-full --}}
                     <table class="min-w-full leading-normal">
                         <thead>
-                            <tr>
+                            <tr> {{-- Removed bg-gray-100 from the row --}}
                                 <th
-                                    class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"> {{-- Added bg-gray-100 --}}
                                     Name
                                 </th>
                                 <th
-                                    class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"> {{-- Added bg-gray-100 --}}
                                     Email
                                 </th>
                                 <th
-                                    class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"> {{-- Added bg-gray-100 --}}
                                     Roles
                                 </th>
                                 <th
-                                    class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"> {{-- Added bg-gray-100 --}}
                                     Created At
                                 </th>
-                                <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100"></th> {{-- Actions column --}}
+                                <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100"></th> {{-- Added bg-gray-100, Actions column --}}
                             </tr>
                         </thead>
                         <tbody>
                             @forelse ($users as $user)
                             <tr>
-                                <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
                                 <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
                                     <p class="text-gray-900 whitespace-no-wrap">{{ $user->name }}</p>
                                 </td>
@@ -83,14 +87,14 @@
                             </tr>
                             @empty
                                 <tr>
-                                    <td colspan="5" class="px-5 py-5 border-b border-gray-200 bg-white text-sm text-center">
+                                    <td colspan="5" class="px-5 py-5 border-gray-200 bg-white text-sm text-center">
                                         No users found.
                                     </td>
                                 </tr>
                             @endforelse
                         </tbody>
                     </table>
-                    <div class="px-5 py-5 bg-white border-t flex flex-col xs:flex-row items-center xs:justify-between">
+                    <div class="px-5 py-5 bg-white flex flex-col xs:flex-row items-center xs:justify-between">
                          {{ $users->links() }}
                     </div>
                 </div>

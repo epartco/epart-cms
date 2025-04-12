@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\ArticleController;
 use App\Http\Controllers\Admin\BoardController as AdminBoardController; // Alias for admin controller
 use App\Http\Controllers\Admin\CommentController; // Import CommentController
+use App\Http\Controllers\Admin\MediaController; // Import MediaController
 use App\Http\Controllers\Admin\PageController;
 use App\Http\Controllers\Admin\PostController as AdminPostController; // Alias for admin controller
 use App\Http\Controllers\Admin\UserController;
@@ -23,12 +24,15 @@ use Illuminate\Support\Facades\Route;
 | routes are loaded by the RouteServiceProvider and all of them will
 | be assigned to the "web" middleware group. Make something great!
 |
-*/
+ */
 
-// Redirect root to the posts index page
-Route::get('/', function () {
-    return redirect()->route('posts.index');
-});
+ // Robots.txt route
+ Route::get('/robots.txt', [\App\Http\Controllers\RobotsController::class, 'index']);
+
+ // Redirect root to the posts index page
+ Route::get('/', function () {
+     return redirect()->route('posts.index');
+ });
 
 Route::get('/dashboard', function () {
     return view('dashboard');
@@ -77,6 +81,14 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
      Route::patch('comments/{comment}', [CommentController::class, 'update'])->name('comments.update'); // For status updates primarily
      Route::delete('comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
 
+     // Media Library Management
+     // Define a route outside the resource for the JSON list first
+     // This will be named 'admin.media.listJson' with the prefix
+     Route::get('media/list-json', [MediaController::class, 'listJson'])->name('media.listJson');
+     
+     // Then define the resource routes
+     Route::resource('media', MediaController::class);
+
      // Menu Management
      Route::resource('menus', MenuController::class);
      // Nested Menu Item Management (within a specific menu)
@@ -87,6 +99,9 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
          Route::post('/update-order', [MenuItemController::class, 'updateOrder'])->name('updateOrder'); // Route for updating item order
      });
 
+     // Site Settings
+     Route::get('settings', [\App\Http\Controllers\Admin\SettingController::class, 'edit'])->name('settings.edit');
+     Route::put('settings', [\App\Http\Controllers\Admin\SettingController::class, 'update'])->name('settings.update');
 
      // Add other admin routes here later (Settings)
  });

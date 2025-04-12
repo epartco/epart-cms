@@ -18,13 +18,13 @@
                     @enderror
                 </div>
 
+                {{-- Description 필드 추가 --}}
                 <div class="mb-6">
-                    <label class="block text-gray-700 text-sm font-bold mb-2" for="location">
-                        위치 <span class="text-red-500">*</span>
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="description">
+                        설명 (선택 사항)
                     </label>
-                    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline @error('location') border-red-500 @enderror" id="location" name="location" type="text" placeholder="예: header, footer" value="{{ old('location') }}" required>
-                    <p class="text-gray-600 text-xs italic mt-2">메뉴가 표시될 위치를 나타내는 식별자입니다 (영문 소문자, 숫자, 밑줄_ 사용).</p>
-                    @error('location')
+                    <textarea class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline @error('description') border-red-500 @enderror" id="description" name="description" rows="3" placeholder="메뉴에 대한 간단한 설명">{{ old('description') }}</textarea>
+                    @error('description')
                         <p class="text-red-500 text-xs italic mt-2">{{ $message }}</p>
                     @enderror
                 </div>

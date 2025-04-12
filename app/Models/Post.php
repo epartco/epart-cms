@@ -29,7 +29,7 @@ class Post extends Model
         'meta_description',
         'meta_keywords',
         'canonical_url',
-        'featured_image_path',
+        'featured_image_path', // Restore featured image path
     ];
 
     /**

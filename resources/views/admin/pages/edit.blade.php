@@ -44,8 +44,7 @@
                             <div>
                                 <label for="content" class="block text-sm font-medium text-gray-700">Content</label>
                                 <textarea name="content" id="content" rows="10"
-                                          class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">{{ old('content', $page->content) }}</textarea>
-                                {{-- Consider using a WYSIWYG editor like TinyMCE or CKEditor here later --}}
+                                          class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md tinymce-editor">{{ old('content', $page->content) }}</textarea>
                             </div>
 
                              {{-- Status --}}

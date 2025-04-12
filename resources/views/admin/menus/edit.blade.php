@@ -5,11 +5,12 @@
         <h1 class="text-2xl font-semibold text-gray-700 mb-6">메뉴 수정: {{ $menu->name }}</h1>
 
         <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-            {{-- Form to update menu name and location --}}
+            {{-- Form to update menu name, slug, and description --}}
             <form action="{{ route('admin.menus.update', $menu->id) }}" method="POST">
                 @csrf
                 @method('PUT') {{-- or PATCH --}}
 
+                {{-- Name Field --}}
                 <div class="mb-4">
                     <label class="block text-gray-700 text-sm font-bold mb-2" for="name">
                         메뉴 이름 <span class="text-red-500">*</span>
@@ -20,20 +21,21 @@
                     @enderror
                 </div>
 
+
+                {{-- Description Field --}}
                 <div class="mb-6">
-                    <label class="block text-gray-700 text-sm font-bold mb-2" for="location">
-                        위치 <span class="text-red-500">*</span>
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="description">
+                        설명 (선택 사항)
                     </label>
-                    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline @error('location') border-red-500 @enderror" id="location" name="location" type="text" placeholder="예: header, footer" value="{{ old('location', $menu->location) }}" required>
-                     <p class="text-gray-600 text-xs italic mt-2">메뉴가 표시될 위치를 나타내는 식별자입니다 (영문 소문자, 숫자, 밑줄_ 사용).</p>
-                    @error('location')
+                    <textarea class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline @error('description') border-red-500 @enderror" id="description" name="description" rows="3" placeholder="메뉴에 대한 간단한 설명">{{ old('description', $menu->description) }}</textarea>
+                    @error('description')
                         <p class="text-red-500 text-xs italic mt-2">{{ $message }}</p>
                     @enderror
                 </div>
 
-                {{-- Menu Items Management Section --}}
-                {{-- Initialize Alpine.js component --}}
-                <div x-data="menuItemsManager({{ $menu->id }}, {{ json_encode($menu->items->toArray()) }})" class="mb-6 p-4 bg-gray-100 rounded border border-gray-300">
+                {{-- Menu Items Management Section (Alpine.js) --}}
+                {{-- Use the $menuItems variable passed from the controller --}}
+                <div x-data="menuItemsManager({{ $menu->id }}, {{ json_encode($menuItems->toArray()) }})" class="mb-6 p-4 bg-gray-100 rounded border border-gray-300">
                     <h3 class="text-lg font-semibold text-gray-700 mb-4">메뉴 항목 관리 (드래그하여 순서 변경)</h3>
 
                     {{-- Display Existing Menu Items using Alpine template --}}
@@ -50,7 +52,11 @@
                                 <div class="flex-grow mr-4">
                                     <span class="font-medium" x-text="item.title"></span>
                                     <span class="text-sm text-gray-500 ml-2" x-text="'(' + item.url + ')'"></span>
-                                    {{-- Display parent/target if needed --}}
+                                    {{-- Display Parent Info --}}
+                                    <template x-if="item.parent_id">
+                                        {{-- Ensure IDs are compared as numbers --}}
+                                        <span class="text-xs text-gray-400 ml-2 italic" x-text="'(Parent: ' + (items.find(p => Number(p.id) === Number(item.parent_id))?.title || 'Unknown') + ')'"></span>
+                                    </template>
                                 </div>
                                 <div class="flex-shrink-0">
                                     {{-- Edit/Delete buttons will call Alpine methods --}}
@@ -79,7 +85,25 @@
                                  <label for="item-url" class="block text-sm font-medium text-gray-700">URL <span class="text-red-500">*</span></label>
                                  <input type="text" id="item-url" x-model="editingItem.url" placeholder="예: /about-us or https://example.com" class="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
                              </div>
-                             {{-- Add fields for target, parent_id later --}}
+                             {{-- Parent Item Selector --}}
+                             <div>
+                                <label for="item-parent" class="block text-sm font-medium text-gray-700">부모 항목</label>
+                                <select id="item-parent" x-model="editingItem.parent_id" class="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
+                                    <option value="">-- 없음 --</option>
+                                    <template x-for="parentOption in items" :key="parentOption.id">
+                                        {{-- Disable selecting itself as parent --}}
+                                        <option :value="parentOption.id" x-text="parentOption.title" :disabled="parentOption.id === editingItem.id"></option>
+                                    </template>
+                                </select>
+                            </div>
+                            {{-- Target Selector --}}
+                            <div>
+                                <label for="item-target" class="block text-sm font-medium text-gray-700">열기 방식</label>
+                                <select id="item-target" x-model="editingItem.target" class="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
+                                    <option value="_self">현재 창 (_self)</option>
+                                    <option value="_blank">새 창 (_blank)</option>
+                                </select>
+                            </div>
                          </div>
                          {{-- Add/Update item button calls Alpine method --}}
                          <div class="flex items-center space-x-3">
@@ -95,6 +119,7 @@
                     </div>
                 </div>
 
+                {{-- Form Submission Buttons --}}
                 <div class="flex items-center justify-between mt-6">
                     <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
                         메뉴 정보 업데이트
@@ -109,14 +134,15 @@
  @endsection
 
  <script>
- import Sortable from 'sortablejs'; // Import SortableJS
+ // import Sortable from 'sortablejs'; // Keep this removed
 
  document.addEventListener('alpine:init', () => {
-     Alpine.data('menuItemsManager', (menuId, initialItems = []) => ({
+     // Accept parentOptions as the third argument
+     Alpine.data('menuItemsManager', (menuId, initialItems = [], initialParentOptions = []) => ({
          menuId: menuId,
-         items: initialItems,
+         items: initialItems, // This list has depth and is ordered for display
+         parentOptions: initialParentOptions, // Flat list for the dropdown
          editingItem: { id: null, title: '', url: '', target: '_self', parent_id: null }, // Holds data for add/edit form
-         newItem: { title: '', url: '', target: '_self', parent_id: null }, // Temporary holder for new item before edit state
          loading: false,
          error: '',
 
@@ -136,8 +162,12 @@
 
          // Prepare the form for editing an existing item
          startEdit(item) {
-             // Deep copy the item to avoid modifying the original object directly
-             this.editingItem = JSON.parse(JSON.stringify(item));
+             // Assign properties individually to the editingItem state
+             this.editingItem.id = item.id;
+             this.editingItem.title = item.title;
+             this.editingItem.url = item.url;
+             this.editingItem.target = item.target || '_self'; // Ensure target has a default
+             this.editingItem.parent_id = item.parent_id;
              this.error = '';
              // Scroll to the form for better UX
              document.getElementById('add-edit-menu-item-form').scrollIntoView({ behavior: 'smooth' });
@@ -277,7 +307,8 @@
                          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                      },
                      body: JSON.stringify({
-                         orderedIds: orderedIds
+                         orderedIds: orderedIds // Send flat list for now
+                         // If sending structure: structure: structure
                      })
                  });
 

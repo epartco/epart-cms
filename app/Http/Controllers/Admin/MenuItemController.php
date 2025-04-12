@@ -79,14 +79,23 @@ class MenuItemController extends Controller
             // Order is typically handled separately
         ]);
 
-        $item->update([
+        // Update the item and check if the update was successful
+        $updateResult = $item->update([
             'title' => $validated['title'],
             'url' => $validated['url'],
             'target' => $validated['target'] ?? '_self',
             'parent_id' => $validated['parent_id'] ?? null,
         ]);
 
-        return response()->json($item);
+        // Check if the update failed in the database
+        if (!$updateResult) {
+            return response()->json(['message' => '데이터베이스 업데이트에 실패했습니다.'], 500);
+        }
+
+        // Refresh the model instance from the database to ensure we return the latest data
+        $item->refresh();
+
+        return response()->json($item); // Return the refreshed item
     }
 
     /**

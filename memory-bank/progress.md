@@ -16,10 +16,50 @@
 *   프론트엔드 게시글 상세 보기 및 댓글 표시/작성 기능 구현 완료.
 *   관리자 메뉴 관리 기능 기본 CRUD 구현 완료 (컨트롤러, 라우트, 뷰, 레이아웃 링크).
 *   **관리자 메뉴 항목 관리 기본 CRUD 구현 완료 (모델, 마이그레이션, 컨트롤러, 라우트, 뷰 업데이트 및 Alpine.js 통합).**
+*   **관리자 메뉴 항목 중첩 UI 기본 구현 완료 (부모 선택 기능):**
+    *   `Admin/MenuController` 수정 (`edit` 메소드에서 `$menuItems` 전달).
+    *   `admin/menus/edit.blade.php` 수정 (부모 선택 드롭다운 추가, 부모 정보 표시, Alpine.js 초기화 수정).
 *   프론트엔드 네비게이션 동적 생성 완료 (View Composer, Service Provider, 레이아웃 수정).
+*   **미디어 라이브러리 기본 기능 구현 완료:**
+    *   `spatie/laravel-medialibrary` 패키지 설치 및 설정 (마이그레이션 실행).
+    *   관리자 레이아웃에 미디어 라이브러리 링크 추가.
+    *   `Admin/MediaController` 생성 및 라우트 정의.
+    *   미디어 라이브러리 뷰 (`index.blade.php`) 생성 (업로드 폼, 목록).
+    *   `Admin/MediaController` 핵심 메소드 (`index`, `store`, `destroy`) 구현.
+    *   `User` 모델에 `InteractsWithMedia` 트레이트 및 `thumbnail` 변환 추가.
+*   **미디어 라이브러리 편집 기능 구현 완료:** 미디어 이름 및 alt 텍스트 수정 가능.
+*   **사이트 전반 설정 기능 구현 완료:** 관리자 페이지에서 사이트 이름, 기본 SEO 정보, 추적 코드 등 설정 가능.
 
 ## 완료된 작업
 
+*   **미디어 라이브러리 편집 기능 구현 완료:**
+    *   `app/Http/Controllers/Admin/MediaController.php` 수정: `edit` 및 `update` 메소드 추가.
+    *   `resources/views/admin/media/index.blade.php` 수정: '수정' 버튼 추가.
+    *   `resources/views/admin/media/edit.blade.php` 뷰 생성: 편집 폼 구현.
+*   **사이트 전반 설정 기능 구현 완료:**
+    *   `spatie/laravel-settings` 패키지 설치 및 설정 (`settings` 테이블 마이그레이션 확인).
+    *   `app/Settings/GeneralSettings.php` 설정 클래스 생성 (site_name, site_description, default_meta_title, default_meta_description, robots_txt, google_analytics_id, google_site_verification 속성 정의).
+    *   `app/Http/Controllers/Admin/SettingController.php` 생성 및 `edit`, `update` 메소드 구현 (설정 로드 및 저장, 유효성 검사 포함).
+    *   `routes/web.php`에 관리자 설정 라우트 (`/admin/settings` GET, PUT) 추가.
+    *   `resources/views/layouts/admin.blade.php` 사이드바에 'Settings' 링크 추가 및 활성화 로직 적용.
+    *   `resources/views/admin/settings/edit.blade.php` 뷰 생성 (설정 폼 구현, 오류/성공 메시지 표시).
+    *   `resources/views/layouts/admin.blade.php` 수정: `<title>` 및 사이드바 헤더에 `site_name` 설정 값 적용.
+    *   `resources/views/layouts/app.blade.php` 수정: `<title>`, 기본 `<meta name="description">`, 로고 텍스트, 푸터 저작권에 설정 값 적용.
+    *   `app/Http/Controllers/RobotsController.php` 생성 및 `index` 메소드 구현 (`robots.txt` 내용 반환).
+    *   `routes/web.php`에 `/robots.txt` 라우트 추가.
+*   **관리자 메뉴 항목 중첩 UI 기본 구현 (부모 선택 기능):** (상세 내용은 위 '현재 상태' 참조)
+*   **미디어 라이브러리 확장 (에디터 연동):**
+    *   `tinymce` npm 패키지 설치.
+    *   `resources/js/app.js` 수정: TinyMCE 임포트 및 초기화 로직 추가 (`.tinymce-editor` 셀렉터).
+    *   페이지 및 포스트 생성/수정 폼 (`create.blade.php`, `edit.blade.php`)의 content `<textarea>`에 `tinymce-editor` 클래스 추가.
+    *   `resources/views/components/admin/media-library-modal.blade.php` 컴포넌트 생성 (Alpine.js 기반).
+    *   `routes/web.php` 수정: 미디어 목록 JSON 반환 라우트 (`admin.media.listJson`) 추가.
+    *   `app/Http/Controllers/Admin/MediaController.php` 수정: `listJson` 메소드 구현 (미디어 정보 포맷팅 및 JSON 반환).
+    *   미디어 라이브러리 모달 컴포넌트 수정: `loadMedia` 함수에서 `fetch`를 사용하여 `admin.media.listJson` 라우트 호출하도록 변경.
+    *   `resources/views/layouts/admin.blade.php` 수정: 미디어 라이브러리 모달 컴포넌트 포함.
+    *   `resources/js/app.js` 수정: TinyMCE 초기화 옵션에 `file_picker_callback` 추가하여 이미지/미디어 버튼 클릭 시 모달 열도록 구현.
+    *   `npm run build` 실행하여 프론트엔드 에셋 빌드.
+*   **미디어 라이브러리 기본 기능 구현:** (상세 내용은 위 '현재 상태' 참조)
 *   **관리자 메뉴 항목 관리 기본 CRUD 구현:**
     *   `Admin/MenuItemController` 생성 및 `store`, `update`, `destroy`, `updateOrder` 메소드 구현 (AJAX 처리)
     *   `routes/web.php`에 `MenuItem` 관련 중첩 리소스 및 순서 변경 라우트 추가
@@ -90,18 +130,7 @@
 
 ## 남은 작업 (단기)
 
-1.  **관리자 메뉴 항목 순서 변경 기능 구현:**
-    *   `admin/menus/edit.blade.php` 뷰에 SortableJS 등 라이브러리 적용하여 드래그 앤 드롭 UI 구현
-    *   `Admin/MenuItemController`의 `updateOrder` 메소드와 연동 (AJAX)
-2.  **관리자 메뉴 항목 중첩(계층 구조) UI 구현:**
-    *   `edit.blade.php` 뷰에서 부모 항목 선택 기능 추가
-    *   Alpine.js 및 컨트롤러 로직에서 `parent_id` 처리
-3.  **미디어 라이브러리 기능 구현:**
-    *   `spatie/laravel-medialibrary` 패키지 설치 및 설정
-    *   이미지/파일 업로드 및 관리 UI 구현
-4.  **사이트 전반 설정 기능 구현:**
-    *   설정 모델 또는 시스템 구현
-    *   관리자 UI에서 사이트 정보, 기본 SEO, 추적 코드 등 설정 관리
+*   (다음 작업 정의 필요)
 
 ## 알려진 이슈 또는 고려 사항
 

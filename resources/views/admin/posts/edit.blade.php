@@ -50,8 +50,7 @@
                             <div>
                                 <label for="content" class="block text-sm font-medium text-gray-700">Content</label>
                                 <textarea name="content" id="content" rows="15"
-                                          class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">{{ old('content', $post->content) }}</textarea>
-                                {{-- Consider using a WYSIWYG editor like TinyMCE or CKEditor here later --}}
+                                          class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md tinymce-editor">{{ old('content', $post->content) }}</textarea>
                             </div>
 
                              {{-- Tags --}}
@@ -62,20 +61,6 @@
                                 <p class="mt-2 text-sm text-gray-500">Comma-separated tags. Existing tags: {{ $tags->implode(', ') }}</p>
                                 {{-- Consider using a JS library like Tagify or Select2 for better UX --}}
                             </div>
-
-                             {{-- Featured Image --}}
-                             <div>
-                                <label for="featured_image" class="block text-sm font-medium text-gray-700">Featured Image</label>
-                                <input type="file" name="featured_image" id="featured_image"
-                                       class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"/>
-                                @if($post->featured_image_path)
-                                    <div class="mt-2">
-                                        <img src="{{ Storage::url($post->featured_image_path) }}" alt="Current Featured Image" class="h-20 w-auto">
-                                        <p class="text-xs text-gray-500">Current image. Uploading a new image will replace this one.</p>
-                                    </div>
-                                @endif
-                            </div>
-
 
                              {{-- Status --}}
                             <div>

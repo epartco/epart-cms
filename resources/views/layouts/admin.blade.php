@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'Laravel') }} - Admin</title>
+    <title>{{ app(App\Settings\GeneralSettings::class)->site_name ?? config('app.name', 'Laravel') }} - Admin</title>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
@@ -30,7 +30,7 @@
     <div class="admin-container">
         <!-- Sidebar -->
         <aside class="admin-sidebar">
-            <h1 class="text-xl font-semibold mb-4">{{ config('app.name', 'Laravel') }} Admin</h1>
+            <h1 class="text-xl font-semibold mb-4">{{ app(App\Settings\GeneralSettings::class)->site_name ?? config('app.name', 'Laravel') }} Admin</h1>
             <nav>
                 <ul>
                     <li class="mb-2"><a href="{{ route('admin.dashboard') }}" class="text-blue-600 hover:underline">Dashboard</a></li>
@@ -41,8 +41,9 @@
                     <li class="mb-2"><a href="{{ route('admin.articles.index') }}" class="{{ request()->routeIs('admin.articles.*') ? 'text-blue-600 font-semibold' : 'text-gray-600' }} hover:underline">Articles</a></li>
                     <li class="mb-2"><a href="{{ route('admin.comments.index') }}" class="{{ request()->routeIs('admin.comments.*') ? 'text-blue-600 font-semibold' : 'text-gray-600' }} hover:underline">Comments</a></li>
                     <li class="mb-2"><a href="{{ route('admin.menus.index') }}" class="{{ request()->routeIs('admin.menus.*') ? 'text-blue-600 font-semibold' : 'text-gray-600' }} hover:underline">Menus</a></li> {{-- Menu Link Added --}}
+                    <li class="mb-2"><a href="{{ route('admin.media.index') }}" class="{{ request()->routeIs('admin.media.*') ? 'text-blue-600 font-semibold' : 'text-gray-600' }} hover:underline">Media Library</a></li>
                     <li class="mb-2"><a href="{{ route('admin.users.index') }}" class="{{ request()->routeIs('admin.users.*') ? 'text-blue-600 font-semibold' : 'text-gray-600' }} hover:underline">Users</a></li>
-                    <li class="mb-2"><a href="#" class="text-gray-600 hover:underline">Settings</a></li>
+                    <li class="mb-2"><a href="{{ route('admin.settings.edit') }}" class="{{ request()->routeIs('admin.settings.*') ? 'text-blue-600 font-semibold' : 'text-gray-600' }} hover:underline">Settings</a></li>
                 </ul>
             </nav>
             <div class="mt-auto pt-4 border-t">
@@ -82,5 +83,9 @@
             @yield('content')
         </main>
     </div>
+
+    {{-- Include the Media Library Modal --}}
+    <x-admin.media-library-modal />
+
 </body>
 </html>

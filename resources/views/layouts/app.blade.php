@@ -5,7 +5,10 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>{{ config('app.name', 'Laravel') }}</title>
+        {{-- Use site name from settings, fallback to config --}}
+        <title>{{ app(App\Settings\GeneralSettings::class)->site_name ?? config('app.name', 'Laravel') }}</title>
+        {{-- Add default meta description from settings --}}
+        <meta name="description" content="{{ app(App\Settings\GeneralSettings::class)->default_meta_description ?? '' }}">
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
@@ -17,26 +20,44 @@
     <body class="font-sans antialiased">
         <div class="min-h-screen bg-gray-100 flex flex-col">
             {{-- @include('layouts.navigation') --}}
-            <nav class="bg-white shadow-md">
+            <nav class="bg-white shadow-md pt-4">
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div class="flex justify-between h-16">
-                        <div class="flex">
+                    {{-- items-center 클래스 추가 --}}
+                    <div class="flex justify-between h-16 items-center">
+                        {{-- 로고와 메뉴를 묶는 div에도 items-center 추가 --}}
+                        <div class="flex items-center">
                             <div class="shrink-0 flex items-center">
                                 <a href="/">
-                                    {{-- Placeholder for Logo --}}
-                                    <span class="font-semibold text-xl text-gray-800">{{ config('app.name', 'Laravel') }}</span>
+                                    {{-- Placeholder for Logo - Use Site Name --}}
+                                    <span class="font-semibold text-xl text-gray-800">{{ app(App\Settings\GeneralSettings::class)->site_name ?? config('app.name', 'Laravel') }}</span>
                                 </a>
                             </div>
                             <!-- Dynamic Navigation Menu -->
                             <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
-                                @isset($menus)
-                                    @foreach ($menus as $menu)
-                                        {{-- TODO: Add logic for active state based on current route/URL --}}
-                                        {{-- TODO: Add logic for hierarchical menus (parent_id) if needed --}}
-                                        <a href="{{ url($menu->url) }}" target="{{ $menu->target }}"
-                                           class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 text-gray-500 hover:text-gray-700 hover:border-gray-300 focus:outline-none focus:text-gray-700 focus:border-gray-300 transition duration-150 ease-in-out">
-                                            {{ $menu->name }}
-                                        </a>
+                                {{-- MenuComposer에서 전달된 $mainMenuItems 사용 --}}
+                                @isset($mainMenuItems)
+                                    @foreach ($mainMenuItems as $menuItem)
+                                        <div class="relative group"> {{-- 드롭다운을 위한 relative positioning 및 group 클래스 --}}
+                                            <a href="{{ url($menuItem->url) }}" target="{{ $menuItem->target ?? '_self' }}"
+                                               class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->is(ltrim($menuItem->url, '/')) ? 'border-indigo-400 text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }} focus:outline-none focus:text-gray-700 focus:border-gray-300 transition duration-150 ease-in-out text-sm font-medium leading-5">
+                                                <span>{{ $menuItem->title }}</span>
+                                                {{-- 하위 항목이 있으면 드롭다운 아이콘 표시 --}}
+                                                @if ($menuItem->children->isNotEmpty())
+                                                    <svg class="ml-1 h-4 w-4 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                                    </svg>
+                                                @endif
+                                            </a>
+                                            {{-- 하위 메뉴 드롭다운 --}}
+                                            @if ($menuItem->children->isNotEmpty())
+                                                <div class="absolute left-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 ease-in-out z-10">
+                                                    <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="options-menu">
+                                                        {{-- submenu partial 포함 --}}
+                                                        @include('layouts.partials.submenu', ['items' => $menuItem->children])
+                                                    </div>
+                                                </div>
+                                            @endif
+                                        </div>
                                     @endforeach
                                 @endisset
                             </div>
@@ -110,7 +131,7 @@
 
             <footer class="bg-gray-800 text-white mt-auto">
                 <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 text-center text-sm">
-                    &copy; {{ date('Y') }} {{ config('app.name', 'Laravel') }}. All rights reserved.
+                    &copy; {{ date('Y') }} {{ app(App\Settings\GeneralSettings::class)->site_name ?? config('app.name', 'Laravel') }}. All rights reserved.
                 </div>
             </footer>
         </div>

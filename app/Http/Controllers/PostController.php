@@ -27,23 +27,23 @@ class PostController extends Controller
     /**
      * Display the specified post.
      *
-     * Display the specified post using route model binding with the slug.
+     * Display the specified post by its slug.
      *
-     * @param \App\Models\Post $post The post instance resolved by slug.
+     * @param string $slug The URL slug from the route.
      * @return \Illuminate\View\View
-     */
-    public function show(Post $post): View // Use implicit route model binding
-    {
-        // Laravel automatically finds the post by slug due to the route definition {slug}
-        // and the Post model using Sluggable (or having getRouteKeyName() return 'slug').
-        // The $post variable is already populated with the correct Post model instance.
+      */
+     public function show(string $slug): View // Accept slug string instead of model
+     {
+         // Manually find the post by slug, converting the input slug to lowercase
+         // to match how it's likely stored by the sluggable package.
+         $post = Post::where('slug', mb_strtolower($slug, 'UTF-8'))->firstOrFail();
 
-        // Consider adding status checks here if needed, e.g.,
-        // if ($post->status !== 'published') {
-        //     abort(404);
-        // }
+         // Consider adding status checks here if needed, e.g.,
+         // if ($post->status !== 'published') {
+         //     abort(404);
+         // }
 
-        // Return the view, passing the automatically resolved post data
-        return view('posts.show', compact('post'));
-    }
+         // Return the view, passing the found post data
+         return view('posts.show', compact('post'));
+     }
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Models\Menu; // Import the Menu model
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller; // Add base controller import
+use Illuminate\Support\Str; // Import Str facade for slug generation
 
 class MenuController extends Controller
 {
@@ -32,7 +33,7 @@ class MenuController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'location' => 'required|string|max:255|unique:menus,location', // Location should be unique
+            'description' => 'nullable|string', // Add description validation
         ]);
 
         Menu::create($validated);
@@ -54,8 +55,32 @@ class MenuController extends Controller
     public function edit(string $id)
     {
         $menu = Menu::findOrFail($id); // Find the menu or fail
-        return view('admin.menus.edit', compact('menu'));
+        // Get all items for this menu, ordered by 'order'
+        $allItems = $menu->allItems()->orderBy('order')->get();
+
+        // Function to recursively assign depth to each item
+        $assignDepth = function ($items, $parentId = null, $depth = 0) use (&$assignDepth) {
+            $result = collect(); // Use a collection to store results
+            foreach ($items->where('parent_id', $parentId) as $item) {
+                $item->depth = $depth; // Assign depth property
+                $result->push($item); // Add item to the result collection
+                // Recursively get children and merge them into the result
+                $children = $assignDepth($items, $item->id, $depth + 1);
+                $result = $result->merge($children);
+            }
+            return $result;
+        };
+
+        // Assign depth to all items and get the ordered list with depth info
+        $menuItems = $assignDepth($allItems);
+
+        // Use the depth-assigned list for both the main list and the parent dropdown options
+        $parentOptions = $menuItems;
+
+        return view('admin.menus.edit', compact('menu', 'menuItems', 'parentOptions'));
     }
+
+    // Note: $menuItems and $parentOptions now both contain the 'depth' property.
 
     /**
      * Update the specified resource in storage.
@@ -66,8 +91,7 @@ class MenuController extends Controller
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            // Allow the current menu's location, otherwise check for uniqueness
-            'location' => 'required|string|max:255|unique:menus,location,' . $menu->id,
+            'description' => 'nullable|string', // Add description validation
         ]);
 
         $menu->update($validated);

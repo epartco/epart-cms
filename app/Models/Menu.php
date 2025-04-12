@@ -18,7 +18,9 @@ class Menu extends Model
      */
     protected $fillable = [
         'name',
-        'location', // Only name and location are fillable for the Menu itself
+        'slug', // Add slug field
+        'description',
+        'order', // Added order field
     ];
 
     /**

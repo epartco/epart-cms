@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\User; // Import User model
 use Illuminate\Http\Request;
-// Removed redundant: use App\Http\Controllers\Controller;
 use Spatie\Permission\Models\Role; // Import Role model
+use Illuminate\Support\Facades\Hash; // Import Hash facade
+use Illuminate\Validation\Rules\Password; // Import Password rule
+use Illuminate\Validation\Rule; // Import Rule for unique email check
 
 class UserController extends Controller
 {
@@ -29,30 +31,28 @@ class UserController extends Controller
     }
 
     /**
-use Illuminate\Support\Facades\Hash; // Import Hash facade
-use Illuminate\Validation\Rules; // Import Rules
-
-    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
     {
-        $request->validate([
+        $validatedData = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:'.User::class],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'password' => ['required', 'confirmed', Password::defaults()],
             'roles' => ['required', 'array'],
             'roles.*' => ['exists:roles,id'], // Ensure selected roles exist
         ]);
 
         $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
+            'name' => $validatedData['name'],
+            'email' => $validatedData['email'],
+            'password' => Hash::make($validatedData['password']),
         ]);
 
-        // Assign roles using Spatie package method
-        $user->syncRoles($request->input('roles'));
+        // Assign roles using validated data
+        // Get role names from the validated IDs
+        $roleNames = Role::whereIn('id', $validatedData['roles'])->pluck('name')->toArray();
+        $user->syncRoles($roleNames);
 
         return redirect()->route('admin.users.index')
                          ->with('success', 'User created successfully.'); // Add success message
@@ -78,9 +78,6 @@ use Illuminate\Validation\Rules; // Import Rules
     }
 
     /**
-use Illuminate\Validation\Rule; // Import Rule for unique email check
-
-    /**
      * Update the specified resource in storage.
      */
     public function update(Request $request, User $user) // Use route model binding
@@ -90,7 +87,7 @@ use Illuminate\Validation\Rule; // Import Rule for unique email check
             // Ignore the current user's email when checking for uniqueness
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique(User::class)->ignore($user->id)],
             // Password validation is optional, only if password field is filled
-            'password' => ['nullable', 'confirmed', Rules\Password::defaults()],
+            'password' => ['nullable', 'confirmed', Password::defaults()],
             'roles' => ['required', 'array'],
             'roles.*' => ['exists:roles,id'],
         ]);
@@ -104,7 +101,9 @@ use Illuminate\Validation\Rule; // Import Rule for unique email check
         $user->update($data);
 
         // Sync roles
-        $user->syncRoles($request->input('roles'));
+        // Get role names from the input IDs
+        $roleNames = Role::whereIn('id', $request->input('roles', []))->pluck('name')->toArray();
+        $user->syncRoles($roleNames);
 
         return redirect()->route('admin.users.index')
                          ->with('success', 'User updated successfully.');
