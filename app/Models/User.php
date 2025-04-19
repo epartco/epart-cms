@@ -57,7 +57,6 @@ class User extends Authenticatable implements HasMedia // Implement the interfac
         $this->addMediaConversion('thumbnail')
               ->width(150) // Define thumbnail width
               ->height(150) // Define thumbnail height
-              ->format('png') // Explicitly set format to PNG
               ->sharpen(10)
               ->nonQueued(); // Perform conversion immediately (can be queued for performance)
     }

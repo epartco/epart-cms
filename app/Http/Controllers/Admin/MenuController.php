@@ -33,9 +33,11 @@ class MenuController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'description' => 'nullable|string', // Add description validation
+            // 'url' => 'required|string|max:255', // Removed url validation
+            'description' => 'nullable|string',
         ]);
 
+        // Ensure only necessary fields are passed to create
         Menu::create($validated);
 
         return redirect()->route('admin.menus.index')->with('success', '메뉴가 성공적으로 생성되었습니다.');
